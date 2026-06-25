@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 Dallas County 4-H Fair Schedule</title>
+  <style>
+    :root {
+      --green: #2d6a2d;
+      --green-light: #4a9e4a;
+      --green-pale: #e8f5e8;
+      --gold: #c8a000;
+      --gold-pale: #fdf8e1;
+      --gray: #555;
+      --border: #ddd;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f0;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--green);
+      color: white;
+      padding: 1.25rem 1.5rem 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; line-height: 1.2; }
+    header p  { font-size: .85rem; opacity: .85; margin-top: .3rem; }
+
+    .toolbar {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 1.5rem;
+      display: flex;
+      gap: .75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    #search {
+      flex: 1;
+      min-width: 180px;
+      padding: .45rem .75rem;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: .9rem;
+      outline: none;
+    }
+    #search:focus { border-color: var(--green-light); box-shadow: 0 0 0 2px rgba(74,158,74,.2); }
+
+    .filter-group {
+      display: flex;
+      gap: .4rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: .3rem .75rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: white;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .filter-btn:hover  { border-color: var(--green-light); }
+    .filter-btn.active { background: var(--green); color: white; border-color: var(--green); }
+
+    nav.day-tabs {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      background: white;
+      border-bottom: 2px solid var(--green);
+      padding: 0 1.5rem;
+      scrollbar-width: none;
+    }
+    nav.day-tabs::-webkit-scrollbar { display: none; }
+
+    .day-tab {
+      padding: .65rem 1rem;
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--gray);
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all .15s;
+      margin-bottom: -2px;
+    }
+    .day-tab:hover  { color: var(--green); }
+    .day-tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+    main { max-width: 860px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+
+    .day-panel { display: none; }
+    .day-panel.active { display: block; }
+
+    .day-heading {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--green);
+      margin: 0 0 .9rem;
+      padding-bottom: .4rem;
+      border-bottom: 2px solid var(--green-pale);
+    }
+
+    .note {
+      font-size: .8rem;
+      color: var(--gray);
+      background: var(--gold-pale);
+      border-left: 3px solid var(--gold);
+      padding: .5rem .75rem;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-bottom: 1rem;
+    }
+
+    .event-list { display: flex; flex-direction: column; gap: .5rem; }
+
+    .event-card {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: .7rem 1rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      transition: box-shadow .15s;
+    }
+    .event-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .event-card.hidden { display: none; }
+
+    .event-time {
+      min-width: 90px;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--green);
+      padding-top: .1rem;
+      white-space: nowrap;
+    }
+
+    .event-body { flex: 1; }
+    .event-title { font-size: .95rem; font-weight: 600; line-height: 1.3; }
+    .event-location {
+      font-size: .78rem;
+      color: var(--gray);
+      margin-top: .2rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: .68rem;
+      font-weight: 700;
+      padding: .15rem .45rem;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      margin-top: .3rem;
+    }
+
+    /* category colors */
+    .cat-beef     { background: #fde8d8; color: #a03000; }
+    .cat-swine    { background: #fce4ec; color: #880e4f; }
+    .cat-sheep    { background: #e8eaf6; color: #283593; }
+    .cat-goat     { background: #e8eaf6; color: #283593; }
+    .cat-horse    { background: #fff3e0; color: #bf360c; }
+    .cat-rabbit   { background: #f3e5f5; color: #6a1b9a; }
+    .cat-poultry  { background: #fffde7; color: #827717; }
+    .cat-dog      { background: #e0f7fa; color: #006064; }
+    .cat-cat      { background: #e0f7fa; color: #006064; }
+    .cat-static   { background: #e8f5e9; color: #1b5e20; }
+    .cat-food     { background: #fbe9e7; color: #bf360c; }
+    .cat-clover   { background: #e8f5e8; color: #2d6a2d; }
+    .cat-entertainment { background: #e8eaf6; color: #1a237e; }
+    .cat-admin    { background: #f5f5f5; color: #424242; }
+    .cat-auction  { background: var(--gold-pale); color: #7a5c00; }
+
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      color: var(--gray);
+      font-style: italic;
+    }
+
+    footer {
+      text-align: center;
+      font-size: .75rem;
+      color: #999;
+      padding: 1.5rem;
+    }
+    footer a { color: var(--green-light); }
+
+    @media (max-width: 500px) {
+      header h1 { font-size: 1.1rem; }
+      .event-time { min-width: 70px; font-size: .75rem; }
+      .event-title { font-size: .88rem; }
+      .toolbar { padding: .6rem .75rem; }
+      main { padding: 1rem .6rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>2026 Dallas County 4-H Fair Schedule</h1>
+  <p>July 6–12 &nbsp;·&nbsp; Adel, Iowa &nbsp;·&nbsp; <a href="https://www.dallascountyfair.com/fair-schedule/" style="color:#a8d8a8" target="_blank">Full Fair Schedule</a></p>
+</header>
+
+<div class="toolbar">
+  <input id="search" type="search" placeholder="Search events…" aria-label="Search events">
+  <div class="filter-group" id="filters">
+    <button class="filter-btn active" data-cat="all">All</button>
+    <button class="filter-btn" data-cat="beef">Beef</button>
+    <button class="filter-btn" data-cat="swine">Swine/Pig</button>
+    <button class="filter-btn" data-cat="sheep">Sheep</button>
+    <button class="filter-btn" data-cat="goat">Goat</button>
+    <button class="filter-btn" data-cat="horse">Horse</button>
+    <button class="filter-btn" data-cat="rabbit">Rabbit</button>
+    <button class="filter-btn" data-cat="poultry">Poultry</button>
+    <button class="filter-btn" data-cat="dog">Dog/Pet</button>
+    <button class="filter-btn" data-cat="static">Static</button>
+    <button class="filter-btn" data-cat="clover">Clover Kids</button>
+    <button class="filter-btn" data-cat="food">Food</button>
+    <button class="filter-btn" data-cat="entertainment">Entertainment</button>
+  </div>
+</div>
+
+<nav class="day-tabs" id="dayTabs">
+  <div class="day-tab active" data-day="setup">Setup</div>
+  <div class="day-tab" data-day="mon">Mon 7/6</div>
+  <div class="day-tab" data-day="tue">Tue 7/7</div>
+  <div class="day-tab" data-day="wed">Wed 7/8</div>
+  <div class="day-tab" data-day="thu">Thu 7/9</div>
+  <div class="day-tab" data-day="fri">Fri 7/10</div>
+  <div class="day-tab" data-day="sat">Sat 7/11</div>
+  <div class="day-tab" data-day="sun">Sun 7/12</div>
+</nav>
+
+<main>
+
+<!-- SETUP -->
+<section class="day-panel active" id="panel-setup">
+  <h2 class="day-heading">Fair Set-Up — Sunday, June 28</h2>
+  <div class="event-list">
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">6:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Fair Set-Up</div>
+        <div class="event-location">Dallas County Fairgrounds</div>
+        <span class="badge cat-admin">Setup</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MONDAY -->
+<section class="day-panel" id="panel-mon">
+  <h2 class="day-heading">Monday, July 6</h2>
+  <div class="note">Static judging and bucket/bottle calf interviews run simultaneously.</div>
+  <div class="event-list">
+    <div class="event-card" data-cats="static">
+      <div class="event-time">9:00 AM – 12:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">4-H Static Exhibit Judging – Group 1</div>
+        <div class="event-location">Static Building</div>
+        <div>Adams Arrows · Daring Dreamers · Machine Magicians · Sugar Grove Sunshine · Dallas County Innovators · Heartland Warriors · Silver Spurs · Best of Union</div>
+        <span class="badge cat-static">Static</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">12:00 – 12:30 PM</div>
+      <div class="event-body">
+        <div class="event-title">No Judging — Judges' Lunch Break</div>
+        <div class="event-location">Static Building</div>
+        <span class="badge cat-admin">Break</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="static">
+      <div class="event-time">12:30 – 2:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">4-H Static Exhibit Judging – Group 2</div>
+        <div class="event-location">Static Building</div>
+        <div>Boone Progressors · Minburn 4-H Club · Independent Members · Dallas County Aggies · Sugar Grove Blue Ribbon Winners</div>
+        <span class="badge cat-static">Static</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="beef clover">
+      <div class="event-time">9:00 AM – 2:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Bucket Bottle Calf &amp; Returner Calf Interviews</div>
+        <div class="event-location">Static Building (simultaneous with judging)</div>
+        <span class="badge cat-beef">Beef</span>
+        <span class="badge cat-clover">Clover Kids</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TUESDAY -->
+<section class="day-panel" id="panel-tue">
+  <h2 class="day-heading">Tuesday, July 7 — Move-In Day</h2>
+  <div class="event-list">
+    <div class="event-card" data-cats="swine">
+      <div class="event-time">6:00 – 8:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Swine Check-In</div>
+        <div class="event-location">Livestock Building</div>
+        <span class="badge cat-swine">Swine</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="beef clover">
+      <div class="event-time">8:00 – 10:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">Clover Kids Bucket &amp; Bottle Animal Check-In</div>
+        <div class="event-location">Livestock Building</div>
+        <span class="badge cat-clover">Clover Kids</span>
+        <span class="badge cat-beef">Beef</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="beef">
+      <div class="event-time">8:00 – 11:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Beef Weigh-In / Check-In</div>
+        <div class="event-location">Livestock Building</div>
+        <span class="badge cat-beef">Beef</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="sheep goat">
+      <div class="event-time">8:00 – 10:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Sheep &amp; Goat Check-In</div>
+        <div class="event-location">Livestock Building</div>
+        <span class="badge cat-sheep">Sheep</span>
+        <span class="badge cat-goat">Goat</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="sheep goat">
+      <div class="event-time">9:00 – 11:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">Sheep &amp; Goat Weigh-In (Rate of Gain)</div>
+        <div class="event-location">Livestock Building</div>
+        <span class="badge cat-sheep">Sheep</span>
+        <span class="badge cat-goat">Goat</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="horse">
+      <div class="event-time">10:00 AM – 12:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Horse Check-In</div>
+        <div class="event-location">Horse Barn</div>
+        <span class="badge cat-horse">Horse</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="rabbit">
+      <div class="event-time">10:00 AM – 12:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Rabbit Check-In</div>
+        <div class="event-location">Rabbit Building</div>
+        <span class="badge cat-rabbit">Rabbit</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="poultry">
+      <div class="event-time">10:00 AM – 12:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Poultry Check-In</div>
+        <div class="event-location">Poultry Barn</div>
+        <span class="badge cat-poultry">Poultry</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="static">
+      <div class="event-time">1:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Static Building Opens</div>
+        <div class="event-location">Static Building</div>
+        <span class="badge cat-static">Static</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="static">
+      <div class="event-time">2:00 – 3:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">State Fair Pictures — Static Exhibits</div>
+        <div class="event-location">Static Building (with Sarah W.)</div>
+        <span class="badge cat-static">Static</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">4:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">All Declared Weights Due to Superintendents</div>
+        <div class="event-location">See Annie or your Superintendent</div>
+        <span class="badge cat-admin">Deadline</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment">
+      <div class="event-time">4:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">County Council Barnyard Olympics</div>
+        <div class="event-location">Livestock Arena</div>
+        <span class="badge cat-entertainment">Entertainment</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="swine admin">
+      <div class="event-time">TBD</div>
+      <div class="event-body">
+        <div class="event-title">Swine Production Scanning</div>
+        <div class="event-location">Livestock Building</div>
+        <div style="font-size:.8rem;color:#888">Depends on vet's schedule</div>
+        <span class="badge cat-swine">Swine</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="food">
+      <div class="event-time">5:30 – 7:30 PM</div>
+      <div class="event-body">
+        <div class="event-title">BBQ Supper for Dallas County 4-H Families</div>
+        <div class="event-location">Entertainment Plaza</div>
+        <span class="badge cat-food">Food</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WEDNESDAY -->
+<section class="day-panel" id="panel-wed">
+  <h2 class="day-heading">Wednesday, July 8</h2>
+  <div class="event-list">
+    <div class="event-card" data-cats="horse">
+      <div class="event-time">7:30 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Horse Show — Day 1</div>
+        <div class="event-location">South Arena</div>
+        <div>Trail · Halter · Performance</div>
+        <span class="badge cat-horse">Horse</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="food">
+      <div class="event-time">8:00 – 10:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">Dallas County Farm Bureau 4-H/FFA Breakfast</div>
+        <div class="event-location">Entertainment Plaza</div>
+        <span class="badge cat-food">Food</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="dog clover">
+      <div class="event-time">9:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA/Clover Kids Dog Show</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <span class="badge cat-dog">Dog</span>
+        <span class="badge cat-clover">Clover Kids</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment admin">
+      <div class="event-time">5:30 PM</div>
+      <div class="event-body">
+        <div class="event-title">Flag Raising</div>
+        <div class="event-location">Dallas County Fairgrounds</div>
+        <span class="badge cat-entertainment">Ceremony</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="static">
+      <div class="event-time">6:00 – 7:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">State Fair Pictures — Static Exhibits</div>
+        <div class="event-location">Static Building (with Sarah W.)</div>
+        <span class="badge cat-static">Static</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment">
+      <div class="event-time">6:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Sponsorship Dinner</div>
+        <div class="event-location">Entertainment Plaza</div>
+        <span class="badge cat-entertainment">Event</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THURSDAY -->
+<section class="day-panel" id="panel-thu">
+  <h2 class="day-heading">Thursday, July 9</h2>
+  <div class="event-list">
+    <div class="event-card" data-cats="beef">
+      <div class="event-time">7:30 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Junior Feeder Beef Show</div>
+        <div class="event-location">In Pens</div>
+        <span class="badge cat-beef">Beef</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="beef">
+      <div class="event-time">8:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H/FFA Beef Show</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <span class="badge cat-beef">Beef</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="beef clover">
+      <div class="event-time">After Beef Show</div>
+      <div class="event-body">
+        <div class="event-title">Bucket Bottle &amp; Returning Bucket Bottle Calves Show</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <span class="badge cat-beef">Beef</span>
+        <span class="badge cat-clover">Clover Kids</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="cat dog clover">
+      <div class="event-time">1:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Clover Kid / 4-H / FFA Cat &amp; Pet Show</div>
+        <div class="event-location">Extension Office</div>
+        <span class="badge cat-cat">Cat/Pet</span>
+        <span class="badge cat-clover">Clover Kids</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="poultry clover">
+      <div class="event-time">2:30 PM</div>
+      <div class="event-body">
+        <div class="event-title">Little Clucker's Show</div>
+        <div class="event-location">Rabbit Building</div>
+        <div style="font-size:.8rem;color:#888">3rd &amp; 4th grade community service project</div>
+        <span class="badge cat-poultry">Poultry</span>
+        <span class="badge cat-clover">Clover Kids</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="static clover">
+      <div class="event-time">3:00 – 4:30 PM</div>
+      <div class="event-body">
+        <div class="event-title">Clover Kid Static Judging</div>
+        <div class="event-location">Static Building</div>
+        <span class="badge cat-static">Static</span>
+        <span class="badge cat-clover">Clover Kids</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="clover entertainment">
+      <div class="event-time">3:30 – 5:30 PM</div>
+      <div class="event-body">
+        <div class="event-title">Clover Kids Day — Activities, Games &amp; Popsiclelooza</div>
+        <div class="event-location">Follow signs</div>
+        <span class="badge cat-clover">Clover Kids</span>
+        <span class="badge cat-entertainment">Fun</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment static">
+      <div class="event-time">4:30 PM</div>
+      <div class="event-body">
+        <div class="event-title">Fashion Show</div>
+        <div class="event-location">Center Stage</div>
+        <div style="font-size:.8rem;color:#888">Followed immediately by Communication &amp; Clothing Awards and Senior Recognition</div>
+        <span class="badge cat-entertainment">Show</span>
+        <span class="badge cat-static">Clothing</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="food">
+      <div class="event-time">5:00 – 8:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Dallas County Cattleman's Steak Sandwich Dinner</div>
+        <div class="event-location">Entertainment Plaza</div>
+        <span class="badge cat-food">Food</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment">
+      <div class="event-time">7:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Mutton Bustin' &amp; Rodeo</div>
+        <div class="event-location">South Arena</div>
+        <span class="badge cat-entertainment">Entertainment</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment">
+      <div class="event-time">After Rodeo</div>
+      <div class="event-body">
+        <div class="event-title">Live Music</div>
+        <div class="event-location">South Arena</div>
+        <span class="badge cat-entertainment">Entertainment</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FRIDAY -->
+<section class="day-panel" id="panel-fri">
+  <h2 class="day-heading">Friday, July 10</h2>
+  <div class="event-list">
+    <div class="event-card" data-cats="sheep goat">
+      <div class="event-time">7:30 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H &amp; FFA Dairy &amp; Dairy Goat Show</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <span class="badge cat-sheep">Dairy</span>
+        <span class="badge cat-goat">Dairy Goat</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="sheep">
+      <div class="event-time">9:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H &amp; FFA Sheep Show</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <span class="badge cat-sheep">Sheep</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="goat">
+      <div class="event-time">~30 min after Sheep Show</div>
+      <div class="event-body">
+        <div class="event-title">4-H &amp; FFA Meat Goat Show</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <span class="badge cat-goat">Goat</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment">
+      <div class="event-time">3:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Queen Coronation</div>
+        <div class="event-location">Entertainment Plaza</div>
+        <span class="badge cat-entertainment">Ceremony</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment static">
+      <div class="event-time">4:30 PM</div>
+      <div class="event-body">
+        <div class="event-title">Share the Fun</div>
+        <div class="event-location">Center Stage</div>
+        <span class="badge cat-entertainment">Show</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment">
+      <div class="event-time">7:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Tyler Braden with special guest Jordan Beem</div>
+        <div class="event-location">South Arena</div>
+        <span class="badge cat-entertainment">Concert</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SATURDAY -->
+<section class="day-panel" id="panel-sat">
+  <h2 class="day-heading">Saturday, July 11</h2>
+  <div class="event-list">
+    <div class="event-card" data-cats="swine">
+      <div class="event-time">8:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H &amp; FFA Pig Show</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <span class="badge cat-swine">Swine</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="swine entertainment">
+      <div class="event-time">After Pig Show</div>
+      <div class="event-body">
+        <div class="event-title">Pigs N' Pals</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <span class="badge cat-swine">Swine</span>
+        <span class="badge cat-entertainment">Fun</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="beef sheep goat clover">
+      <div class="event-time">After Pigs N' Pals</div>
+      <div class="event-body">
+        <div class="event-title">Clover Kid Bucket Bottle Show</div>
+        <div class="event-location">Livestock Show Ring</div>
+        <div>Lamb · Kid · Calf</div>
+        <span class="badge cat-clover">Clover Kids</span>
+        <span class="badge cat-beef">Beef</span>
+        <span class="badge cat-sheep">Sheep</span>
+        <span class="badge cat-goat">Goat</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">9:00 AM – 3:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Dallas County Fair Board Elections</div>
+        <div class="event-location">Dallas County Fairgrounds</div>
+        <span class="badge cat-admin">Admin</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="rabbit clover">
+      <div class="event-time">9:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">4-H &amp; FFA &amp; Clover Kids Rabbit Show</div>
+        <div class="event-location">Rabbit Building</div>
+        <span class="badge cat-rabbit">Rabbit</span>
+        <span class="badge cat-clover">Clover Kids</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="poultry clover">
+      <div class="event-time">1:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">4-H &amp; FFA &amp; Clover Kids Poultry Show</div>
+        <div class="event-location">Poultry Barn</div>
+        <span class="badge cat-poultry">Poultry</span>
+        <span class="badge cat-clover">Clover Kids</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="horse">
+      <div class="event-time">3:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">4-H &amp; FFA Horse Show — Day 2</div>
+        <div class="event-location">South Arena</div>
+        <div>Games · Barrels · Poles</div>
+        <span class="badge cat-horse">Horse</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="auction admin">
+      <div class="event-time">5:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Auction Forms Due</div>
+        <div class="event-location">See event staff</div>
+        <span class="badge cat-admin">Deadline</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="entertainment">
+      <div class="event-time">7:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Figure 8 Races</div>
+        <div class="event-location">North Track</div>
+        <div style="font-size:.8rem;color:#888">Parade of Champions during intermission</div>
+        <span class="badge cat-entertainment">Racing</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUNDAY -->
+<section class="day-panel" id="panel-sun">
+  <h2 class="day-heading">Sunday, July 12 — Fair Wrap-Up</h2>
+  <div class="event-list">
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">6:00 AM</div>
+      <div class="event-body">
+        <div class="event-title">Static Exhibits &amp; All Animals Released</div>
+        <div class="event-location">Dallas County Fairgrounds</div>
+        <span class="badge cat-admin">Release</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">11:30 AM</div>
+      <div class="event-body">
+        <div class="event-title">Deadline — Static &amp; All Animals NOT in Auction Must Be Out</div>
+        <div class="event-location">All Barns</div>
+        <span class="badge cat-admin">Deadline</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="auction">
+      <div class="event-time">12:00 PM</div>
+      <div class="event-body">
+        <div class="event-title">Premium Auction</div>
+        <div class="event-location">Dallas County Fairgrounds</div>
+        <span class="badge cat-auction">Auction</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">After Auction</div>
+      <div class="event-body">
+        <div class="event-title">Fair Cleanup</div>
+        <div class="event-location">Dallas County Fairgrounds</div>
+        <span class="badge cat-admin">Cleanup</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="no-results" id="noResults" style="display:none">No events match your search or filter.</div>
+
+</main>
+
+<footer>
+  Schedule data from the 2026 Dallas County 4-H Word document · <a href="https://www.dallascountyfair.com/fair-schedule/" target="_blank">Full Fair Schedule</a> · <a href="https://www.extension.iastate.edu/dallas/county-fair" target="_blank">ISU Extension – Dallas County</a><br>
+  <em>Schedule subject to change.</em>
+</footer>
+
+<script>
+  const tabs = document.querySelectorAll('.day-tab');
+  const panels = document.querySelectorAll('.day-panel');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const searchInput = document.getElementById('search');
+  const noResults = document.getElementById('noResults');
+
+  let activeCat = 'all';
+  let searchTerm = '';
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.day).classList.add('active');
+      applyFilters();
+    });
+  });
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.cat;
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener('input', () => {
+    searchTerm = searchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+      // show all days when searching
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.add('active'));
+    } else {
+      // restore first active tab
+      const activeTab = document.querySelector('.day-tab.active') || tabs[0];
+      panels.forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + activeTab.dataset.day).classList.add('active');
+    }
+    applyFilters();
+  });
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.event-card');
+    let visible = 0;
+    cards.forEach(card => {
+      const cats = (card.dataset.cats || '').split(' ');
+      const title = card.querySelector('.event-title').textContent.toLowerCase();
+      const loc   = (card.querySelector('.event-location') || {}).textContent?.toLowerCase() || '';
+      const catMatch = activeCat === 'all' || cats.includes(activeCat);
+      const searchMatch = !searchTerm || title.includes(searchTerm) || loc.includes(searchTerm);
+
+      // also check if card's panel is active
+      const panel = card.closest('.day-panel');
+      const panelActive = panel && panel.classList.contains('active');
+
+      if (catMatch && searchMatch && panelActive) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  // Auto-advance to current/next fair day
+  (function() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const dayMap = [
+      { day: 'setup', date: new Date(y, 5, 28) },
+      { day: 'mon',   date: new Date(y, 6,  6) },
+      { day: 'tue',   date: new Date(y, 6,  7) },
+      { day: 'wed',   date: new Date(y, 6,  8) },
+      { day: 'thu',   date: new Date(y, 6,  9) },
+      { day: 'fri',   date: new Date(y, 6, 10) },
+      { day: 'sat',   date: new Date(y, 6, 11) },
+      { day: 'sun',   date: new Date(y, 6, 12) },
+    ];
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let target = null;
+    for (const d of dayMap) {
+      if (d.date >= today) { target = d.day; break; }
+    }
+    if (target) {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      const tab = document.querySelector(`.day-tab[data-day="${target}"]`);
+      const panel = document.getElementById('panel-' + target);
+      if (tab && panel) { tab.classList.add('active'); panel.classList.add('active'); }
+    }
+  })();
+</script>
+
+</body>
+</html>
