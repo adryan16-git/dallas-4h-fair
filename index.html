@@ -237,7 +237,8 @@
 </div>
 
 <nav class="day-tabs" id="dayTabs">
-  <div class="day-tab active" data-day="setup">Setup</div>
+  <div class="day-tab active" data-day="deadlines">Deadlines</div>
+  <div class="day-tab" data-day="setup">Setup</div>
   <div class="day-tab" data-day="mon">Mon 7/6</div>
   <div class="day-tab" data-day="tue">Tue 7/7</div>
   <div class="day-tab" data-day="wed">Wed 7/8</div>
@@ -249,8 +250,34 @@
 
 <main>
 
+<!-- DEADLINES -->
+<section class="day-panel active" id="panel-deadlines">
+  <h2 class="day-heading">Key Deadlines — Before the Fair</h2>
+  <div class="note">Complete these steps in order — 4-H Online first, then Fair Entry. Missing either deadline means your animal or project won't be eligible.</div>
+  <div class="event-list">
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">May 15</div>
+      <div class="event-body">
+        <div class="event-title">Animal Entries — 4-H Online</div>
+        <div class="event-location">All animals must be enrolled in 4-H Online by this date</div>
+        <a href="https://www.4honline.com/#/user/sign-in" target="_blank" rel="noopener" style="display:inline-block;margin-top:.5rem;padding:.35rem .85rem;background:var(--green);color:white;border-radius:20px;font-size:.82rem;font-weight:600;text-decoration:none;">Open 4-H Online ↗</a>
+        <span class="badge cat-admin" style="margin-left:.4rem">Step 1</span>
+      </div>
+    </div>
+    <div class="event-card" data-cats="admin">
+      <div class="event-time">June 26</div>
+      <div class="event-body">
+        <div class="event-title">All Fair Entries — Fair Entry</div>
+        <div class="event-location">All fair entries (animals &amp; projects) must also be entered in Fair Entry by this date</div>
+        <a href="https://fairentry.com/Public/FindYourFair" target="_blank" rel="noopener" style="display:inline-block;margin-top:.5rem;padding:.35rem .85rem;background:var(--green);color:white;border-radius:20px;font-size:.82rem;font-weight:600;text-decoration:none;">Open Fair Entry ↗</a>
+        <span class="badge cat-admin" style="margin-left:.4rem">Step 2</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- SETUP -->
-<section class="day-panel active" id="panel-setup">
+<section class="day-panel" id="panel-setup">
   <h2 class="day-heading">Fair Set-Up — Sunday, June 28</h2>
   <div class="event-list">
     <div class="event-card" data-cats="admin">
@@ -850,7 +877,7 @@
     noResults.style.display = visible === 0 ? 'block' : 'none';
   }
 
-  // Auto-advance to current/next fair day
+  // Auto-advance to current/next fair day; fall back to Deadlines tab outside fair week
   (function() {
     const now = new Date();
     const y = now.getFullYear();
@@ -869,6 +896,7 @@
     for (const d of dayMap) {
       if (d.date >= today) { target = d.day; break; }
     }
+    // Only override if we're in fair week; otherwise leave Deadlines as default
     if (target) {
       tabs.forEach(t => t.classList.remove('active'));
       panels.forEach(p => p.classList.remove('active'));
