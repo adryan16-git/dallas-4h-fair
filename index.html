@@ -819,91 +819,20 @@
   let activeCat = 'all';
   let searchTerm = '';
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById('panel-' + tab.dataset.day).classList.add('active');
-      applyFilters();
-    });
-  });
+  // Which tab the user last landed on (set by auto-advance or manual click)
+  let manualTab = 'deadlines';
 
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeCat = btn.dataset.cat;
-      // clear search when changing filter
-      searchInput.value = '';
-      searchTerm = '';
-      applyFilters();
-    });
-  });
-
-  searchInput.addEventListener('input', () => {
-    searchTerm = searchInput.value.toLowerCase().trim();
-    // reset filter to All when searching
-    if (searchTerm) {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      document.querySelector('.filter-btn[data-cat="all"]').classList.add('active');
-      activeCat = 'all';
-    }
-    applyFilters();
-  });
-
-  // Track which tab was last manually selected
-  let manualTab = document.querySelector('.day-tab.active')?.dataset.day || 'deadlines';
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => { manualTab = tab.dataset.day; });
-  });
-
-  function applyFilters() {
-    const crossDay = activeCat !== 'all' || searchTerm !== '';
-
-    if (crossDay) {
-      // Reveal all panels so we can show matches from every day
-      tabs.forEach(t => t.classList.remove('active'));
-      panels.forEach(p => p.classList.add('active'));
-    } else {
-      // Restore the manually selected tab
-      tabs.forEach(t => t.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      const activeTab = document.querySelector(`.day-tab[data-day="${manualTab}"]`) || tabs[0];
-      activeTab.classList.add('active');
-      document.getElementById('panel-' + activeTab.dataset.day)?.classList.add('active');
-    }
-
-    const cards = document.querySelectorAll('.event-card');
-    let visible = 0;
-    cards.forEach(card => {
-      const cats = (card.dataset.cats || '').split(' ');
-      const title = card.querySelector('.event-title').textContent.toLowerCase();
-      const loc   = (card.querySelector('.event-location') || {}).textContent?.toLowerCase() || '';
-      const catMatch = activeCat === 'all' || cats.includes(activeCat);
-      const searchMatch = !searchTerm || title.includes(searchTerm) || loc.includes(searchTerm);
-      const panel = card.closest('.day-panel');
-      const panelActive = panel?.classList.contains('active');
-
-      if (catMatch && searchMatch && panelActive) {
-        card.classList.remove('hidden');
-        visible++;
-      } else {
-        card.classList.add('hidden');
-      }
-    });
-
-    // Hide day headings that have no visible cards
-    panels.forEach(panel => {
-      const anyVisible = [...panel.querySelectorAll('.event-card')].some(c => !c.classList.contains('hidden'));
-      panel.style.display = (panel.classList.contains('active') && anyVisible) ? '' : (crossDay ? 'none' : '');
-      if (panel.classList.contains('active') && !crossDay) panel.style.display = '';
-    });
-
-    noResults.style.display = visible === 0 ? 'block' : 'none';
+  function switchToTab(dayKey) {
+    manualTab = dayKey;
+    tabs.forEach(t => t.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    const tab = document.querySelector(`.day-tab[data-day="${dayKey}"]`);
+    const panel = document.getElementById('panel-' + dayKey);
+    if (tab) tab.classList.add('active');
+    if (panel) panel.classList.add('active');
   }
 
-  // Auto-advance to current/next fair day; fall back to Deadlines tab outside fair week
+  // Auto-advance: find the current or next upcoming fair day
   (function() {
     const now = new Date();
     const y = now.getFullYear();
@@ -917,20 +846,88 @@
       { day: 'sat',   date: new Date(y, 6, 11) },
       { day: 'sun',   date: new Date(y, 6, 12) },
     ];
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const today = new Date(y, now.getMonth(), now.getDate());
     let target = null;
     for (const d of dayMap) {
       if (d.date >= today) { target = d.day; break; }
     }
-    // Only override if we're in fair week; otherwise leave Deadlines as default
-    if (target) {
-      tabs.forEach(t => t.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      const tab = document.querySelector(`.day-tab[data-day="${target}"]`);
-      const panel = document.getElementById('panel-' + target);
-      if (tab && panel) { tab.classList.add('active'); panel.classList.add('active'); }
-    }
+    switchToTab(target || 'deadlines');
   })();
+
+  // Single tab click handler — update manualTab first, then filter
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Reset filters/search when manually switching tabs
+      filterBtns.forEach(b => b.classList.remove('active'));
+      document.querySelector('.filter-btn[data-cat="all"]').classList.add('active');
+      activeCat = 'all';
+      searchInput.value = '';
+      searchTerm = '';
+      switchToTab(tab.dataset.day);
+    });
+  });
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.cat;
+      searchInput.value = '';
+      searchTerm = '';
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener('input', () => {
+    searchTerm = searchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      document.querySelector('.filter-btn[data-cat="all"]').classList.add('active');
+      activeCat = 'all';
+    }
+    applyFilters();
+  });
+
+  function applyFilters() {
+    const crossDay = activeCat !== 'all' || searchTerm !== '';
+
+    if (crossDay) {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.add('active'));
+    } else {
+      switchToTab(manualTab);
+    }
+
+    const cards = document.querySelectorAll('.event-card');
+    let visible = 0;
+    cards.forEach(card => {
+      const cats = (card.dataset.cats || '').split(' ');
+      const title = card.querySelector('.event-title').textContent.toLowerCase();
+      const loc   = (card.querySelector('.event-location') || {}).textContent?.toLowerCase() || '';
+      const catMatch = activeCat === 'all' || cats.includes(activeCat);
+      const searchMatch = !searchTerm || title.includes(searchTerm) || loc.includes(searchTerm);
+      const panelActive = card.closest('.day-panel')?.classList.contains('active');
+
+      if (catMatch && searchMatch && panelActive) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    // When cross-day: hide panels that have zero visible cards
+    if (crossDay) {
+      panels.forEach(panel => {
+        const anyVisible = [...panel.querySelectorAll('.event-card')].some(c => !c.classList.contains('hidden'));
+        panel.style.display = anyVisible ? '' : 'none';
+      });
+    } else {
+      panels.forEach(p => { p.style.display = ''; });
+    }
+
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+  }
 </script>
 
 </body>
