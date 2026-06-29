@@ -825,7 +825,7 @@
   function switchToTab(dayKey) {
     manualTab = dayKey;
     tabs.forEach(t => t.classList.remove('active'));
-    panels.forEach(p => p.classList.remove('active'));
+    panels.forEach(p => { p.classList.remove('active'); p.style.display = ''; });
     const tab = document.querySelector(`.day-tab[data-day="${dayKey}"]`);
     const panel = document.getElementById('panel-' + dayKey);
     if (tab) tab.classList.add('active');
