@@ -430,7 +430,7 @@
       </div>
     </div>
     <div class="event-card" data-cats="entertainment">
-      <div class="event-time">4:00 PM</div>
+      <div class="event-time">2:00 PM</div>
       <div class="event-body">
         <div class="event-title">County Council Barnyard Olympics</div>
         <div class="event-location">Livestock Arena</div>
@@ -806,7 +806,7 @@
 
 <footer>
   Schedule data from the 2026 Dallas County 4-H Word document · <a href="https://www.dallascountyfair.com/fair-schedule/" target="_blank">Full Fair Schedule</a> · <a href="https://www.extension.iastate.edu/dallas/county-fair" target="_blank">ISU Extension – Dallas County</a><br>
-  <em>Schedule subject to change.</em>
+  <em>Schedule subject to change.</em> &nbsp;·&nbsp; <strong>Last updated: June 28, 2026</strong>
 </footer>
 
 <script>
@@ -834,26 +834,46 @@
       filterBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeCat = btn.dataset.cat;
+      // clear search when changing filter
+      searchInput.value = '';
+      searchTerm = '';
       applyFilters();
     });
   });
 
   searchInput.addEventListener('input', () => {
     searchTerm = searchInput.value.toLowerCase().trim();
+    // reset filter to All when searching
     if (searchTerm) {
-      // show all days when searching
-      tabs.forEach(t => t.classList.remove('active'));
-      panels.forEach(p => p.classList.add('active'));
-    } else {
-      // restore first active tab
-      const activeTab = document.querySelector('.day-tab.active') || tabs[0];
-      panels.forEach(p => p.classList.remove('active'));
-      document.getElementById('panel-' + activeTab.dataset.day).classList.add('active');
+      filterBtns.forEach(b => b.classList.remove('active'));
+      document.querySelector('.filter-btn[data-cat="all"]').classList.add('active');
+      activeCat = 'all';
     }
     applyFilters();
   });
 
+  // Track which tab was last manually selected
+  let manualTab = document.querySelector('.day-tab.active')?.dataset.day || 'deadlines';
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => { manualTab = tab.dataset.day; });
+  });
+
   function applyFilters() {
+    const crossDay = activeCat !== 'all' || searchTerm !== '';
+
+    if (crossDay) {
+      // Reveal all panels so we can show matches from every day
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.add('active'));
+    } else {
+      // Restore the manually selected tab
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      const activeTab = document.querySelector(`.day-tab[data-day="${manualTab}"]`) || tabs[0];
+      activeTab.classList.add('active');
+      document.getElementById('panel-' + activeTab.dataset.day)?.classList.add('active');
+    }
+
     const cards = document.querySelectorAll('.event-card');
     let visible = 0;
     cards.forEach(card => {
@@ -862,10 +882,8 @@
       const loc   = (card.querySelector('.event-location') || {}).textContent?.toLowerCase() || '';
       const catMatch = activeCat === 'all' || cats.includes(activeCat);
       const searchMatch = !searchTerm || title.includes(searchTerm) || loc.includes(searchTerm);
-
-      // also check if card's panel is active
       const panel = card.closest('.day-panel');
-      const panelActive = panel && panel.classList.contains('active');
+      const panelActive = panel?.classList.contains('active');
 
       if (catMatch && searchMatch && panelActive) {
         card.classList.remove('hidden');
@@ -874,6 +892,14 @@
         card.classList.add('hidden');
       }
     });
+
+    // Hide day headings that have no visible cards
+    panels.forEach(panel => {
+      const anyVisible = [...panel.querySelectorAll('.event-card')].some(c => !c.classList.contains('hidden'));
+      panel.style.display = (panel.classList.contains('active') && anyVisible) ? '' : (crossDay ? 'none' : '');
+      if (panel.classList.contains('active') && !crossDay) panel.style.display = '';
+    });
+
     noResults.style.display = visible === 0 ? 'block' : 'none';
   }
 
