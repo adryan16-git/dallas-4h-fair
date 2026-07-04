@@ -43,7 +43,7 @@
       align-items: center;
       flex-wrap: wrap;
       position: sticky;
-      top: 0;
+      top: 52px;
       z-index: 10;
     }
 
@@ -81,26 +81,29 @@
       display: flex;
       gap: 0;
       overflow-x: auto;
-      background: white;
-      border-bottom: 2px solid var(--green);
+      background: var(--green);
       padding: 0 1.5rem;
       scrollbar-width: none;
+      position: sticky;
+      top: 0;
+      z-index: 11;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
     }
     nav.day-tabs::-webkit-scrollbar { display: none; }
 
     .day-tab {
-      padding: .65rem 1rem;
+      padding: .85rem 1.25rem;
       cursor: pointer;
-      font-size: .85rem;
-      font-weight: 600;
-      color: var(--gray);
+      font-size: 1rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.7);
       border-bottom: 3px solid transparent;
       white-space: nowrap;
       transition: all .15s;
-      margin-bottom: -2px;
+      letter-spacing: .01em;
     }
-    .day-tab:hover  { color: var(--green); }
-    .day-tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .day-tab:hover  { color: white; }
+    .day-tab.active { color: white; border-bottom-color: var(--gold); }
 
     main { max-width: 860px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
 
@@ -203,9 +206,10 @@
 
     @media (max-width: 500px) {
       header h1 { font-size: 1.1rem; }
+      .day-tab { font-size: .85rem; padding: .7rem .9rem; }
+      .toolbar { top: 44px; padding: .6rem .75rem; }
       .event-time { min-width: 70px; font-size: .75rem; }
       .event-title { font-size: .88rem; }
-      .toolbar { padding: .6rem .75rem; }
       main { padding: 1rem .6rem 3rem; }
     }
   </style>
@@ -216,6 +220,18 @@
   <h1>2026 Dallas County 4-H Fair Schedule</h1>
   <p>July 6–12 &nbsp;·&nbsp; Adel, Iowa &nbsp;·&nbsp; <a href="https://www.dallascountyfair.com/fair-schedule/" style="color:#a8d8a8" target="_blank">Full Fair Schedule</a></p>
 </header>
+
+<nav class="day-tabs" id="dayTabs">
+  <div class="day-tab active" data-day="deadlines">Deadlines</div>
+  <div class="day-tab" data-day="setup">Setup</div>
+  <div class="day-tab" data-day="mon">Mon 7/6</div>
+  <div class="day-tab" data-day="tue">Tue 7/7</div>
+  <div class="day-tab" data-day="wed">Wed 7/8</div>
+  <div class="day-tab" data-day="thu">Thu 7/9</div>
+  <div class="day-tab" data-day="fri">Fri 7/10</div>
+  <div class="day-tab" data-day="sat">Sat 7/11</div>
+  <div class="day-tab" data-day="sun">Sun 7/12</div>
+</nav>
 
 <div class="toolbar">
   <input id="search" type="search" placeholder="Search events…" aria-label="Search events">
@@ -235,18 +251,6 @@
     <button class="filter-btn" data-cat="entertainment">Entertainment</button>
   </div>
 </div>
-
-<nav class="day-tabs" id="dayTabs">
-  <div class="day-tab active" data-day="deadlines">Deadlines</div>
-  <div class="day-tab" data-day="setup">Setup</div>
-  <div class="day-tab" data-day="mon">Mon 7/6</div>
-  <div class="day-tab" data-day="tue">Tue 7/7</div>
-  <div class="day-tab" data-day="wed">Wed 7/8</div>
-  <div class="day-tab" data-day="thu">Thu 7/9</div>
-  <div class="day-tab" data-day="fri">Fri 7/10</div>
-  <div class="day-tab" data-day="sat">Sat 7/11</div>
-  <div class="day-tab" data-day="sun">Sun 7/12</div>
-</nav>
 
 <main>
 
