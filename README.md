@@ -1,6 +1,6 @@
 # Dallas County 4-H Fair Schedule Site
 
-Live at: **https://4h.richardsonfamily.us**  
+Live at: **https://dallascounty4h.org**  
 GitHub repo: **https://github.com/adryan16-git/dallas-4h-fair**
 
 ---
@@ -9,7 +9,8 @@ GitHub repo: **https://github.com/adryan16-git/dallas-4h-fair**
 
 - Single self-contained `index.html` file — no frameworks, no dependencies
 - Hosted free on **GitHub Pages** (`main` branch)
-- Custom domain `4h.richardsonfamily.us` via **Cloudflare DNS** (CNAME record, DNS-only / gray cloud)
+- Custom domain `dallascounty4h.org` via **Cloudflare DNS** (apex A records + `www` CNAME, DNS-only / gray cloud)
+- Old hostname `4h.richardsonfamily.us` **302-redirects** to `dallascounty4h.org` via a Cloudflare Single Redirect Rule (path + query preserved)
 - HTTPS provided automatically by GitHub Pages (Let's Encrypt)
 
 ---
@@ -142,10 +143,22 @@ Add this banner just above `<nav class="day-tabs">` in `index.html`, and add the
 
 ## Cloudflare DNS (if ever needed to reconfigure)
 
-- Record type: **CNAME**
-- Name: `4h`
-- Target: `adryan16-git.github.io`
-- Proxy: **DNS only (gray cloud)** — orange/proxied breaks GitHub's HTTPS cert
+### New domain (`dallascounty4h.org`)
+
+| Type | Name | Value | Proxy |
+|------|------|-------|-------|
+| A | `@` | `185.199.108.153` | DNS only |
+| A | `@` | `185.199.109.153` | DNS only |
+| A | `@` | `185.199.110.153` | DNS only |
+| A | `@` | `185.199.111.153` | DNS only |
+| CNAME | `www` | `adryan16-git.github.io` | DNS only |
+
+Proxy must be **DNS only (gray cloud)** — orange/proxied breaks GitHub's HTTPS cert.
+
+### Old hostname redirect (`4h.richardsonfamily.us`)
+
+- A record, name `4h`, value `192.0.2.1` (non-routable placeholder), Proxy: **Proxied (orange cloud)** — Redirect Rules require proxied traffic.
+- A Single Redirect Rule on the `richardsonfamily.us` zone forwards `4h.richardsonfamily.us/*` → `https://dallascounty4h.org/*`, preserving path and query string. Match is host-exact so the family homepage is unaffected.
 
 If HTTPS breaks after a DNS change, remove the custom domain via GitHub Pages settings, let it rebuild, then re-add it and wait ~15 min for the cert.
 
@@ -159,7 +172,7 @@ Copy and paste this to start a Claude Code session for the annual update:
 I need to update the Dallas County 4-H Fair schedule website for 2027.
 
 The site is a single index.html file at ~/projects/dallas-4h-fair/index.html,
-hosted on GitHub Pages at https://4h.richardsonfamily.us.
+hosted on GitHub Pages at https://dallascounty4h.org.
 
 The README has the full yearly checklist. Here's what I need to do:
 
